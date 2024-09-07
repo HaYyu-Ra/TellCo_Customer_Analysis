@@ -1,0 +1,74 @@
+# generate_reports.py
+
+from pptx import Presentation
+from pptx.util import Inches
+import matplotlib.pyplot as plt
+
+def save_figure_as_image(fig, filename):
+    fig.savefig(filename, format='png')
+    plt.close(fig)
+
+def add_slide(prs, title, image_path=None):
+    slide_layout = prs.slide_layouts[5]  # Title and Content
+    slide = prs.slides.add_slide(slide_layout)
+    title_shape = slide.shapes.title
+    title_shape.text = title
+    if image_path:
+        left = Inches(1)
+        top = Inches(1.5)
+        pic = slide.shapes.add_picture(image_path, left, top, width=Inches(8))
+
+def create_pptx_report(output_file):
+    prs = Presentation()
+
+    # Task 1 Report
+    add_slide(prs, 'User Overview Analysis')
+    
+    # Add images and descriptions
+    fig, ax = plt.subplots()
+    top_10_handsets.plot(kind='bar', ax=ax, color='skyblue')
+    ax.set_title('Top 10 Handsets')
+    save_figure_as_image(fig, 'top_10_handsets.png')
+    add_slide(prs, 'Top 10 Handsets', 'top_10_handsets.png')
+    
+    fig, ax = plt.subplots()
+    top_manufacturers.plot(kind='bar', ax=ax, color='salmon')
+    ax.set_title('Top 3 Handset Manufacturers')
+    save_figure_as_image(fig, 'top_manufacturers.png')
+    add_slide(prs, 'Top 3 Handset Manufacturers', 'top_manufacturers.png')
+    
+    fig, ax = plt.subplots()
+    top_5_per_manufacturer.plot(kind='bar', stacked=True, ax=ax)
+    ax.set_title('Top 5 Handsets per Manufacturer')
+    save_figure_as_image(fig, 'top_5_handsets.png')
+    add_slide(prs, 'Top 5 Handsets per Manufacturer', 'top_5_handsets.png')
+
+    # Task 2 Report
+    add_slide(prs, 'User Engagement Analysis')
+    
+    # Add images and descriptions
+    fig, ax = plt.subplots()
+    top_10_customers.plot(kind='bar', ax=ax)
+    ax.set_title('Top 10 Customers by Session Frequency')
+    save_figure_as_image(fig, 'top_10_customers.png')
+    add_slide(prs, 'Top 10 Customers by Session Frequency', 'top_10_customers.png')
+    
+    fig, ax = plt.subplots()
+    app_usage.plot(kind='bar', ax=ax)
+    ax.set_title('Top 3 Most Used Applications')
+    save_figure_as_image(fig, 'top_3_applications.png')
+    add_slide(prs, 'Top 3 Most Used Applications', 'top_3_applications.png')
+    
+    fig, ax = plt.subplots()
+    ax.plot(range(1, 11), sse, marker='o')
+    ax.set_xlabel('Number of clusters')
+    ax.set_ylabel('SSE')
+    ax.set_title('Elbow Method for Optimal k')
+    save_figure_as_image(fig, 'elbow_method.png')
+    add_slide(prs, 'Elbow Method for Optimal k', 'elbow_method.png')
+
+    prs.save(output_file)
+
+if __name__ == '__main__':
+    create_pptx_report('outputs/user_overview_analysis_report.pptx')
+    create_pptx_report('outputs/user_engagement_analysis_report.pptx')
