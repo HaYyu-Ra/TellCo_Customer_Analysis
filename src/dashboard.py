@@ -9,13 +9,14 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score, euclidean_distances
 from sklearn.model_selection import train_test_split
 from sqlalchemy import create_engine
-import pymysql
 import joblib
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.impute import SimpleImputer
+import pymysql
+from sqlalchemy import create_engine
 
 
 # Database URLs
