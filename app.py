@@ -18,7 +18,7 @@ with st.sidebar:
     db_url=st.text_input("PostgreSQL URL (optional)",value=secret_url or os.getenv("TELLCO_DATABASE_URL",""),type="password")
 if up:
     name=up.name.lower()
-    raw=pd.read_parquet(up) if name.endswith(".parquet") else pd.read_excel(up) if name.endswith(".xlsx") else pd.read_csv(up)
+    raw=pd.read_parquet(up) if name.endswith(".parquet") else pd.read_excel(up) if name.endswith(".xlsx") else pd.read_csv(up, dtype={"msisdn_number":"string","imsi":"string","imei":"string","bearer_id":"string"}, low_memory=False)
 elif db_url:
     from sqlalchemy import create_engine
     raw=pd.read_sql_query("SELECT * FROM public.xdr_data",create_engine(db_url))
