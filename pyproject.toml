@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "tellco-analytics"
+version = "1.0.0"
+description = "Customer, engagement, experience and satisfaction analytics for TellCo xDR data"
+requires-python = ">=3.10"
+dependencies = ["pandas>=2.1", "numpy>=1.26", "scikit-learn>=1.4"]
+[tool.setuptools.packages.find]
+where = ["src"]
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

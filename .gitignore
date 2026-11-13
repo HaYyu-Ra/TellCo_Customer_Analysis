@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.env
+.streamlit/secrets.toml
+artifacts/*.csv
+artifacts/*.json
+.DS_Store
+*.dump
+*.sql.gz
+data/
