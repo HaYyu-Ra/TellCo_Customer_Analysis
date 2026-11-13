@@ -9,8 +9,9 @@ BASE_DIR=Path(__file__).resolve().parent
 sys.path.insert(0,str(BASE_DIR/"src"))
 from acis.analysis import load_data,aggregate_policies,hypothesis_tests,train_models
 
-st.set_page_config(page_title="ACIS Insurance Analytics",layout="wide")
-st.title("AlphaCare Insurance Solutions — Motor Portfolio Analytics")
+st.set_page_config(page_title="AlphaCare Insurance Solutions (ACIS)",layout="wide")
+st.title("AlphaCare Insurance Solutions (ACIS)")
+st.subheader("Motor Portfolio Analytics")
 st.caption("Historical exploratory analysis; not an approved pricing or underwriting tool.")
 up=st.file_uploader("Upload MachineLearningRating_v3.txt (pipe-delimited)",type=["txt"])
 default=BASE_DIR/"data/raw/MachineLearningRating_v3.txt"
