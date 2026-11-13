@@ -10,6 +10,16 @@ This repository is prepared for Streamlit Community Cloud:
 4. Deploy. The app can start without a data source and will display setup instructions.
 5. For real analysis, upload a CSV/Parquet/Excel xDR extract in the sidebar or configure a secure `TELLCO_DATABASE_URL` in Streamlit Secrets. Never commit credentials or raw subscriber records.
 
+
+## Private online access
+After the first deployment on Streamlit Community Cloud:
+1. Open the app's **Share** menu (or **Manage app → Settings → Sharing**).
+2. Under **Who can view this app**, choose **Only specific people can view this app** and save.
+3. Add each approved viewer by email in the app's **Share** menu. Viewers sign in with Google or a one-time email link.
+4. Keep the xDR data out of GitHub. A sidebar file upload is session-scoped; each viewer/session may need to upload the file again. For shared, persistent data access, provision a hosted PostgreSQL database and add its connection string as the `TELLCO_DATABASE_URL` secret in Streamlit app settings. Never commit database credentials.
+
+The app is not hosted until an authorized repository owner completes the initial Streamlit sign-in and deployment. The repository code alone does not create a live app.
+
 ## Local run
 ```bash
 pip install -r requirements.txt
