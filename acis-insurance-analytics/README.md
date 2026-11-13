@@ -1,4 +1,6 @@
-# ACIS Motor Insurance Analytics
+# AlphaCare Insurance Solutions (ACIS)
+
+## Motor Insurance Analytics
 
 A reproducible analysis project for the AlphaCare Insurance Solutions (ACIS) motor-insurance challenge.
 
