@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.streamlit/secrets.toml
+data/raw/MachineLearningRating_v3.txt
+data/raw/*.zip
+data/processed/*
+reports/generated/*
+.pytest_cache/

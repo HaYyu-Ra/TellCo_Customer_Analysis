@@ -1,0 +1,4 @@
+[server]
+maxUploadSize = 600
+maxMessageSize = 600
+headless = true
