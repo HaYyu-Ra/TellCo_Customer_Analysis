@@ -11,7 +11,11 @@ st.markdown('<div class="hero"><h1>📡 TellCo Network Intelligence</h1><p>Custo
 with st.sidebar:
     st.header("Data source")
     up=st.file_uploader("Upload xDR data",type=["csv","xlsx","parquet"])
-    db_url=st.text_input("PostgreSQL URL (optional)",value=st.secrets.get("TELLCO_DATABASE_URL",os.getenv("TELLCO_DATABASE_URL","")),type="password")
+    try:
+        secret_url=st.secrets.get("TELLCO_DATABASE_URL","")
+    except Exception:
+        secret_url=""
+    db_url=st.text_input("PostgreSQL URL (optional)",value=secret_url or os.getenv("TELLCO_DATABASE_URL",""),type="password")
 if up:
     name=up.name.lower()
     raw=pd.read_parquet(up) if name.endswith(".parquet") else pd.read_excel(up) if name.endswith(".xlsx") else pd.read_csv(up)
