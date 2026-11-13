@@ -1,0 +1,16 @@
+name: ACIS insurance tests
+on:
+  push:
+    branches: ["acis-insurance-analysis"]
+  pull_request:
+    branches: ["acis-insurance-analysis"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r acis-insurance-analytics/requirements.txt
+      - run: PYTHONPATH=acis-insurance-analytics/src pytest -q acis-insurance-analytics/tests
