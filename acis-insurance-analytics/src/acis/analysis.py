@@ -105,3 +105,66 @@ def run_analysis(path, output="reports/generated"):
     provinces.to_csv(out/"province_summary.csv",index=False)
     postal.to_csv(out/"postal_code_summary_min30.csv",index=False)
     return {"descriptive":desc,"tests":tests,"models":models,"province_summary":provinces,"postal_summary":postal}
+
+
+def train_models(p, random_state=42):
+    """Compare linear/tree/boosting regression, postal-code regressions and claim classification."""
+    from sklearn.linear_model import LinearRegression
+    from sklearn.tree import DecisionTreeRegressor
+    from xgboost import XGBRegressor
+    features=["province","postal_code","gender","vehicle_type","registration_year","make","model"]
+    X=p[features].copy()
+    cat=[c for c in features if c!="registration_year"]
+    def prep():
+        return ColumnTransformer([
+            ("cat",Pipeline([("impute",SimpleImputer(strategy="most_frequent")),("oh",OneHotEncoder(handle_unknown="ignore",min_frequency=10))]),cat),
+            ("num",Pipeline([("impute",SimpleImputer(strategy="median"))]),["registration_year"])])
+    Xtr,Xte,ytr,yte=train_test_split(X,p.claims,test_size=.2,random_state=random_state)
+    candidates={
+        "LinearRegression":LinearRegression(),
+        "DecisionTree":DecisionTreeRegressor(min_samples_leaf=10,random_state=random_state),
+        "RandomForest":RandomForestRegressor(n_estimators=150,min_samples_leaf=3,n_jobs=-1,random_state=random_state),
+        "XGBoost":XGBRegressor(n_estimators=300,max_depth=3,learning_rate=.03,subsample=.8,colsample_bytree=.8,reg_lambda=5,objective="reg:squarederror",n_jobs=-1,random_state=random_state)}
+    fitted, comparison={},{}
+    for name,est in candidates.items():
+        pipe=Pipeline([("prep",prep()),("model",est)])
+        pipe.fit(Xtr,ytr); pred=pipe.predict(Xte)
+        comparison[name]={"MAE":float(mean_absolute_error(yte,pred)),"RMSE":float(mean_squared_error(yte,pred)**.5),"R2":float(r2_score(yte,pred))}
+        fitted[name]=pipe
+    best=max(comparison,key=lambda k:comparison[k]["R2"])
+    shap_importance={}
+    try:
+        import shap
+        sp=fitted["XGBoost"]
+        values=shap.TreeExplainer(sp.named_steps["model"]).shap_values(sp.named_steps["prep"].transform(Xte.iloc[:100]))
+        names=sp.named_steps["prep"].get_feature_names_out()
+        for name,value in zip(names,np.abs(values).mean(axis=0)):
+            raw=name.split("__",1)[-1]
+            field=next((f for f in sorted(features,key=len,reverse=True) if raw==f or raw.startswith(f+"_")),raw)
+            shap_importance[field]=shap_importance.get(field,0.0)+float(value)
+        shap_importance=dict(sorted(shap_importance.items(),key=lambda x:x[1],reverse=True))
+    except Exception as exc:
+        shap_importance={"not_computed":str(exc)[:240]}
+    postal=[]
+    for code,g in p.groupby("postal_code"):
+        if len(g)<30: continue
+        zx=g[["premium","registration_year"]]; zy=g.claims
+        ztr,zte,zytr,zyte=train_test_split(zx,zy,test_size=.3,random_state=random_state)
+        model=Pipeline([("impute",SimpleImputer(strategy="median")),("linear",LinearRegression())])
+        model.fit(ztr,zytr); zp=model.predict(zte)
+        postal.append({"postal_code":str(code),"policies":int(len(g)),"test_n":int(len(zyte)),
+                       "MAE":float(mean_absolute_error(zyte,zp)),"RMSE":float(mean_squared_error(zyte,zp)**.5),"R2":float(r2_score(zyte,zp))})
+    pf=pd.DataFrame(postal)
+    postal_summary={"eligible_postal_codes":int(len(pf)),"minimum_policies":30,
+                    "median_MAE":float(pf.MAE.median()),"median_RMSE":float(pf.RMSE.median()),
+                    "median_R2":float(pf.R2.median()),"postal_codes_with_positive_R2":int((pf.R2>0).sum())}
+    Xtr,Xte,ytr,yte=train_test_split(X,p.has_claim,test_size=.2,random_state=random_state,stratify=p.has_claim)
+    clf=Pipeline([("prep",prep()),("model",RandomForestClassifier(n_estimators=200,min_samples_leaf=5,class_weight="balanced",n_jobs=-1,random_state=random_state))])
+    clf.fit(Xtr,ytr); cp=clf.predict(Xte); prob=clf.predict_proba(Xte)[:,1]
+    classification={"target":"any positive policy-level TotalClaims","test_size":int(len(yte)),
+        "precision":float(precision_score(yte,cp,zero_division=0)),"recall":float(recall_score(yte,cp,zero_division=0)),
+        "F1":float(f1_score(yte,cp,zero_division=0)),"ROC_AUC":float(roc_auc_score(yte,prob))}
+    return {"regression_comparison":comparison,"best_regression_model_by_R2":best,
+            "shap_mean_abs_by_source_feature":shap_importance,
+            "per_postal_code_linear_regression":postal_summary,
+            "per_postal_code_metrics":postal,"classification":classification}
