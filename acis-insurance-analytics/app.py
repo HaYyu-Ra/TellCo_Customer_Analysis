@@ -1,8 +1,11 @@
 from pathlib import Path
+import sys
 import tempfile
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 from acis.analysis import load_data, aggregate_policies, hypothesis_tests, train_models
 
 st.set_page_config(page_title="ACIS Insurance Analytics",layout="wide")
